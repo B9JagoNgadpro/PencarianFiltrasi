@@ -1,7 +1,8 @@
 package jagongadpro.pencarianfiltrasi.service;
 
-public class GameService {
-    @Override
-    public List<GameResponse> searchByName(String name) {
-    }
+import jagongadpro.pencarianfiltrasi.dto.GameResponse;
+import java.util.List;
+
+public interface GameService {
+    List<GameResponse> searchByName(String name);
 }
