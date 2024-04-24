@@ -26,8 +26,8 @@ public class GameSearchServiceTests {
 
     @Test
     void testFindGamesByName() {
-        Game game1 = new Game(1L, "Game 1", "Description 1", 20, "Action", 100);
-        Game game2 = new Game(2L, "Game 2", "Description 2", 25, "Adventure", 150);
+        Game game1 = new Game("1", "Game 1", "Description 1", 20, "Action", 100);
+        Game game2 = new Game("2", "Game 2", "Description 2", 25, "Adventure", 150);
         when(gameRepository.findByNameContaining("Game")).thenReturn(Arrays.asList(game1, game2));
 
         List<Game> results = gameSearchService.findGamesByName("Game");
