@@ -10,10 +10,14 @@ import java.util.List;
 @Service
 public class GameSearchService {
 
-    @Autowired
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
-    public List<Game> findGamesByName(String name) {
-        return gameRepository.findByNameContaining(name);
+    @Autowired
+    public GameSearchService(GameRepository gameRepository) {
+        this.gameRepository = gameRepository;
+    }
+
+    public List<Game> findGamesByName(String nama) {
+        return gameRepository.findByNameContaining(nama);
     }
 }
