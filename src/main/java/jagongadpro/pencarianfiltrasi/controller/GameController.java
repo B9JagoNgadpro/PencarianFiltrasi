@@ -1,6 +1,6 @@
 package jagongadpro.pencarianfiltrasi.controller;
 
-import jagongadpro.pencarianfiltrasi.model.Game;
+import jagongadpro.pencarianfiltrasi.dto.GameResponse;
 import jagongadpro.pencarianfiltrasi.service.GameSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +20,8 @@ public class GameController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Game>> searchGamesByName(@RequestParam("name") String name) {
-        List<Game> games = gameSearchService.findGamesByName(name);
+    public ResponseEntity<List<GameResponse>> searchGamesByName(@RequestParam("name") String name) {
+        List<GameResponse> games = gameSearchService.findGamesByName(name);
         return ResponseEntity.ok(games);
     }
 }
