@@ -1,8 +1,8 @@
 package jagongadpro.pencarianfiltrasi.service;
 
-import jagongadpro.pencarianfiltrasi.model.Game;
+import jagongadpro.pencarianfiltrasi.dto.GameResponse;
 import java.util.List;
 
 public interface GameSearchService {
-    List<Game> findGamesByName(String nama);
+    List<GameResponse> findGamesByName(String nama);
 }
