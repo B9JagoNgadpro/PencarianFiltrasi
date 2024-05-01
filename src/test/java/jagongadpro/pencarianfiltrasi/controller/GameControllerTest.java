@@ -1,6 +1,6 @@
 package jagongadpro.pencarianfiltrasi.controller;
 
-import jagongadpro.pencarianfiltrasi.model.Game;
+import jagongadpro.pencarianfiltrasi.dto.GameResponse;
 import jagongadpro.pencarianfiltrasi.service.GameSearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,21 +25,37 @@ public class GameControllerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     public void testSearchGamesByName() throws Exception {
         String name = "test";
-        List<Game> games = new ArrayList<>();
-        Game game1 = new Game("id1", "Test Game 1", "Description 1", 50, "Action", 10);
-        Game game2 = new Game("id2", "Test Game 2", "Description 2", 40, "Adventure", 20);
+        List<GameResponse> games = new ArrayList<>();
+        GameResponse game1 = GameResponse.builder()
+                .id("id1")
+                .nama("Test Game 1")
+                .deskripsi("Description 1")
+                .harga(50)
+                .kategori("Action")
+                .stok(10)
+                .build();
+
+        GameResponse game2 = GameResponse.builder()
+                .id("id2")
+                .nama("Test Game 2")
+                .deskripsi("Description 2")
+                .harga(40)
+                .kategori("Adventure")
+                .stok(20)
+                .build();
+
         games.add(game1);
         games.add(game2);
 
         when(gameSearchService.findGamesByName(name)).thenReturn(games);
 
-        ResponseEntity<List<Game>> responseEntity = gameController.searchGamesByName(name);
+        ResponseEntity<List<GameResponse>> responseEntity = gameController.searchGamesByName(name);
 
         assertEquals(2, responseEntity.getBody().size());
         assertEquals(game1, responseEntity.getBody().get(0));

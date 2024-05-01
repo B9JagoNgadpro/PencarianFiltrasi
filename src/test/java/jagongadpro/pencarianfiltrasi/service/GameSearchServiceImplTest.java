@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import jagongadpro.pencarianfiltrasi.dto.GameResponse;
 import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 
@@ -29,20 +30,21 @@ public class GameSearchServiceImplTest {
     public void testFindGamesByName() {
         Game game1 = new Game("1", "Mario", "Description of Mario", 50, "Adventure", 10);
         Game game2 = new Game("2", "Zelda", "Description of Zelda", 60, "Adventure", 5);
-        when(gameRepository.findByNameContaining("Adventure")).thenReturn(Arrays.asList(game1, game2));
+        when(gameRepository.findByNamaContaining("Adventure")).thenReturn(Arrays.asList(game1, game2));
 
-        List<Game> results = gameSearchService.findGamesByName("Adventure");
+        List<GameResponse> results = gameSearchService.findGamesByName("Adventure");
 
         assertNotNull(results);
         assertEquals(2, results.size(), "Should return two games");
         assertEquals("Mario", results.get(0).getNama(), "First game should be Mario");
+        assertEquals("Zelda", results.get(1).getNama(), "Second game should be Zelda");
     }
 
     @Test
     public void testFindGamesByName_NoResults() {
-        when(gameRepository.findByNameContaining("Nonexistent")).thenReturn(Arrays.asList());
+        when(gameRepository.findByNamaContaining("Nonexistent")).thenReturn(Arrays.asList());
 
-        List<Game> results = gameSearchService.findGamesByName("Nonexistent");
+        List<GameResponse> results = gameSearchService.findGamesByName("Nonexistent");
 
         assertNotNull(results);
         assertEquals(0, results.size(), "Should return no games");
