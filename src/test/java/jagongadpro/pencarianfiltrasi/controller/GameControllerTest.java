@@ -8,9 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -53,9 +53,10 @@ public class GameControllerTest {
         games.add(game1);
         games.add(game2);
 
-        when(gameSearchService.findGamesByName(name)).thenReturn(games);
+        when(gameSearchService.findGamesByName(name)).thenReturn(CompletableFuture.completedFuture(games));
 
-        ResponseEntity<List<GameResponse>> responseEntity = gameController.searchGamesByName(name);
+        CompletableFuture<ResponseEntity<List<GameResponse>>> responseFuture = gameController.searchGamesByName(name);
+        ResponseEntity<List<GameResponse>> responseEntity = responseFuture.join();
 
         assertEquals(2, responseEntity.getBody().size());
         assertEquals(game1, responseEntity.getBody().get(0));
