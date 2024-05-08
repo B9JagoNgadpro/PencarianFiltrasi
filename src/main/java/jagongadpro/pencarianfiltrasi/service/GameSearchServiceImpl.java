@@ -5,8 +5,8 @@ import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,10 +20,12 @@ public class GameSearchServiceImpl implements GameSearchService {
     }
 
     @Override
-    public List<GameResponse> findGamesByName(String nama) {
-        return gameRepository.findByNameContaining(nama).stream()
-                .map(this::toGameResponse)
-                .collect(Collectors.toList());
+    public CompletableFuture<List<GameResponse>> findGamesByName(String name) {
+        return CompletableFuture.supplyAsync(() ->
+                gameRepository.findByNamaContaining(name).stream()
+                        .map(this::toGameResponse)
+                        .collect(Collectors.toList())
+        );
     }
 
     private GameResponse toGameResponse(Game game) {
