@@ -5,8 +5,8 @@ import jagongadpro.pencarianfiltrasi.service.GameSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/games")
@@ -20,8 +20,8 @@ public class GameController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GameResponse>> searchGamesByName(@RequestParam("name") String name) {
-        List<GameResponse> games = gameSearchService.findGamesByName(name);
-        return ResponseEntity.ok(games);
+    public CompletableFuture<ResponseEntity<List<GameResponse>>> searchGamesByName(@RequestParam("name") String name) {
+        return gameSearchService.findGamesByName(name)
+                .thenApply(ResponseEntity::ok);
     }
 }
