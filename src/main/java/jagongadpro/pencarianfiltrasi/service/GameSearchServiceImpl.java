@@ -69,6 +69,15 @@ public class GameSearchServiceImpl implements GameSearchService {
         });
     }
 
+    @Override
+    public CompletableFuture<List<GameResponse>> searchGames(String query) {
+        return CompletableFuture.supplyAsync(() -> {
+            return gameRepository.searchGames(query).stream()
+                    .map(this::toGameResponse)
+                    .collect(Collectors.toList());
+        });
+    }
+
     private GameResponse toGameResponse(Game game) {
         return GameResponse.builder()
                 .id(game.getId())
