@@ -27,6 +27,13 @@ public class GameController {
                 .exceptionally(e -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @GetMapping("/search")
+    public CompletableFuture<ResponseEntity<List<GameResponse>>> searchGames(@RequestParam("query") String query) {
+        return gameSearchService.searchGames(query)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(e -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
     @GetMapping("/filter")
     public CompletableFuture<ResponseEntity<List<GameResponse>>> filterGames(
             @RequestParam(value = "name", required = false) String name,
