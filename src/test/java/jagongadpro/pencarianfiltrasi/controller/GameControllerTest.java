@@ -86,4 +86,31 @@ public class GameControllerTest {
         assertEquals(1, responseEntity.getBody().size());
         assertEquals("Zelda", responseEntity.getBody().get(0).getNama());
     }
+
+    @Test
+    public void testGetGameById_Found() {
+        String gameId = "1";
+        GameResponse gameResponse = new GameResponse("1", "Mario", "Description of Mario", 50, "Adventure", 10);
+
+        when(gameSearchService.findGameById(gameId)).thenReturn(CompletableFuture.completedFuture(gameResponse));
+
+        CompletableFuture<ResponseEntity<GameResponse>> responseFuture = gameController.getGameById(gameId);
+        ResponseEntity<GameResponse> responseEntity = responseFuture.join();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(gameResponse, responseEntity.getBody());
+    }
+
+    @Test
+    public void testGetGameById_NotFound() {
+        String gameId = "2";
+
+        when(gameSearchService.findGameById(gameId)).thenReturn(CompletableFuture.completedFuture(null));
+
+        CompletableFuture<ResponseEntity<GameResponse>> responseFuture = gameController.getGameById(gameId);
+        ResponseEntity<GameResponse> responseEntity = responseFuture.join();
+
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(null, responseEntity.getBody());
+    }
 }
