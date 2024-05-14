@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -61,5 +63,27 @@ public class GameControllerTest {
         assertEquals(2, responseEntity.getBody().size());
         assertEquals(game1, responseEntity.getBody().get(0));
         assertEquals(game2, responseEntity.getBody().get(1));
+    }
+
+    @Test
+    public void testFilterGames() {
+        String name = "Zelda";
+        String category = "Adventure";
+        Integer minPrice = 10;
+        Integer maxPrice = 100;
+        List<GameResponse> expectedGames = Arrays.asList(
+                new GameResponse("1", "Zelda", "A great game", 50, "Adventure", 15)
+        );
+
+        when(gameSearchService.filterGames(name, category, minPrice, maxPrice))
+                .thenReturn(CompletableFuture.completedFuture(expectedGames));
+
+        CompletableFuture<ResponseEntity<List<GameResponse>>> responseFuture =
+                gameController.filterGames(name, category, minPrice, maxPrice);
+        ResponseEntity<List<GameResponse>> responseEntity = responseFuture.join();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(1, responseEntity.getBody().size());
+        assertEquals("Zelda", responseEntity.getBody().get(0).getNama());
     }
 }
