@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -78,5 +79,27 @@ public class GameSearchServiceImplTest {
 
         assertNotNull(results);
         assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void testFindGameById_Found() {
+        Game game = new Game("1", "Mario", "Description of Mario", 50, "Adventure", 10);
+        when(gameRepository.findById("1")).thenReturn(Optional.of(game));
+
+        CompletableFuture<GameResponse> future = gameSearchService.findGameById("1");
+        GameResponse result = future.join();
+
+        assertNotNull(result);
+        assertEquals("Mario", result.getNama());
+    }
+
+    @Test
+    public void testFindGameById_NotFound() {
+        when(gameRepository.findById("2")).thenReturn(Optional.empty());
+
+        CompletableFuture<GameResponse> future = gameSearchService.findGameById("2");
+        GameResponse result = future.join();
+
+        assertNull(result);
     }
 }
