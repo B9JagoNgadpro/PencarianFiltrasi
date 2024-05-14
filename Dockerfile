@@ -11,6 +11,6 @@ ENV JDBC_DATABASE_USERNAME ${JDBC_DATABASE_USERNAME}
 
 WORKDIR /app
 RUN ls -al
-COPY ./PencarianFiltrasi-0.0.1-SNAPSHOT.jar /app
+COPY ./build/libs/PencarianFiltrasi-0.0.1-SNAPSHOT.jar /app/
 EXPOSE 8080
 CMD ["java", "-jar", "PencarianFiltrasi-0.0.1-SNAPSHOT.jar"]
