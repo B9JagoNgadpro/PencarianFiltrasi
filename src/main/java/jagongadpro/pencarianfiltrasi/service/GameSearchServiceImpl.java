@@ -34,27 +34,23 @@ public class GameSearchServiceImpl implements GameSearchService {
         );
     }
 
-    @Override
     public CompletableFuture<List<GameResponse>> filterGames(String name, String category, Integer minPrice, Integer maxPrice) {
         return CompletableFuture.supplyAsync(() -> {
-            Specification<Game> spec = new Specification<Game>() {
-                @Override
-                public Predicate toPredicate(Root<Game> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                    List<Predicate> predicates = new ArrayList<>();
-                    if (name != null && !name.isEmpty()) {
-                        predicates.add(cb.like(cb.lower(root.get("nama")), "%" + name.toLowerCase() + "%"));
-                    }
-                    if (category != null && !category.isEmpty()) {
-                        predicates.add(cb.equal(root.get("kategori"), category));
-                    }
-                    if (minPrice != null) {
-                        predicates.add(cb.greaterThanOrEqualTo(root.get("harga"), minPrice));
-                    }
-                    if (maxPrice != null) {
-                        predicates.add(cb.lessThanOrEqualTo(root.get("harga"), maxPrice));
-                    }
-                    return cb.and(predicates.toArray(new Predicate[0]));
+            Specification<Game> spec = (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                if (name != null && !name.isEmpty()) {
+                    predicates.add(cb.like(cb.lower(root.get("nama")), "%" + name.toLowerCase() + "%"));
                 }
+                if (category != null && !category.isEmpty()) {
+                    predicates.add(cb.equal(cb.lower(root.get("kategori")), category.toLowerCase()));
+                }
+                if (minPrice != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("harga"), minPrice));
+                }
+                if (maxPrice != null) {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("harga"), maxPrice));
+                }
+                return cb.and(predicates.toArray(new Predicate[0]));
             };
             return gameRepository.findAll(spec).stream()
                     .map(this::toGameResponse)
