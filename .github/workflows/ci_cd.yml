@@ -71,7 +71,7 @@ jobs:
           ./gradlew check --info --stacktrace
           ./gradlew test
           ./gradlew jacocoTestReport
-      # (Optional) Add steps for generating coverage report and other post-test tasks
+      # (Optional) Add steps for generating coverage report and other post-test task
 
   publish:
     name: Publish Docker Image
@@ -86,12 +86,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
+          path: build/libs
       - name: check directory
         run: ls -al
       - name: Docker login
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
       - name: Set Docker BuildKit
         run: export DOCKER_BUILDKIT=1
+      - name: Check directory after downloading artifact
+        run: |
+          ls -al build/libs/
       - name: Build Docker Image
         run: |
           docker build --build-arg PRODUCTION=${{ secrets.PRODUCTION }} --build-arg JDBC_DATABASE_PASSWORD=${{ secrets.JDBC_DATABASE_PASSWORD }} --build-arg JDBC_DATABASE_URL=${{ secrets.JDBC_DATABASE_URL }} --build-arg JDBC_DATABASE_USERNAME=${{ secrets.JDBC_DATABASE_USERNAME}} -t ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} .
