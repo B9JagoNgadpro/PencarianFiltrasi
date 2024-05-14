@@ -102,4 +102,26 @@ public class GameSearchServiceImplTest {
 
         assertNull(result);
     }
+
+    @Test
+    public void testSearchGames() {
+        Game game1 = new Game("1", "Mario", "Jump and run game", 50, "Adventure", 100);
+        Game game2 = new Game("2", "Zelda", "Explore and discover", 70, "Adventure", 60);
+
+        when(gameRepository.searchGames("Mario")).thenReturn(Arrays.asList(game1));
+        when(gameRepository.searchGames("Adventure")).thenReturn(Arrays.asList(game1, game2));
+
+        CompletableFuture<List<GameResponse>> futureMario = gameSearchService.searchGames("Mario");
+        List<GameResponse> resultsMario = futureMario.join();
+        assertNotNull(resultsMario);
+        assertEquals(1, resultsMario.size());
+        assertEquals("Mario", resultsMario.get(0).getNama());
+
+        CompletableFuture<List<GameResponse>> futureAdventure = gameSearchService.searchGames("Adventure");
+        List<GameResponse> resultsAdventure = futureAdventure.join();
+        assertNotNull(resultsAdventure);
+        assertEquals(2, resultsAdventure.size());
+        assertEquals("Mario", resultsAdventure.get(0).getNama());
+        assertEquals("Zelda", resultsAdventure.get(1).getNama());
+    }
 }
