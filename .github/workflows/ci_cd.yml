@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - staging
+
 jobs:
   build:
     name: Build
@@ -32,9 +33,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build with Gradle
-        run: |
-          ./gradlew assemble
-      # (Optional) Add steps for running tests and generating reports
+        run: ./gradlew assemble
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -71,8 +70,6 @@ jobs:
           ./gradlew check --info --stacktrace
           ./gradlew test
           ./gradlew jacocoTestReport
-          
-      # (Optional) Add steps for generating coverage report and other post-test tasks
 
   publish:
     name: Publish Docker Image
@@ -81,14 +78,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: check directory
-        run: ls -al
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      - name: check directory
-        run: ls -al
       - name: Docker login
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
       - name: Set Docker BuildKit
@@ -109,11 +102,9 @@ jobs:
       - name: Install SSH client
         run: sudo apt-get install openssh-client
 
-      - name: create ssh key
-        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && cat ssh-key.pem
+      - name: Create ssh key
+        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && chmod 400 ssh-key.pem
 
-      - name: update permission
-        run: chmod 400 ssh-key.pem
       - name: Deploy to GCP
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh-key.pem ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_STATIC_IP }} "
