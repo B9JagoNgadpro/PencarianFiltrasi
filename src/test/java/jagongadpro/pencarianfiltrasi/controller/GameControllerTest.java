@@ -113,4 +113,40 @@ public class GameControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
         assertEquals(null, responseEntity.getBody());
     }
+
+    @Test
+    public void testSearchGames() {
+        String query = "mario";
+        List<GameResponse> games = new ArrayList<>();
+        GameResponse game1 = GameResponse.builder()
+                .id("id1")
+                .nama("Super Mario")
+                .deskripsi("Plumber hero game")
+                .harga(300)
+                .kategori("Platformer")
+                .stok(50)
+                .build();
+
+        GameResponse game2 = GameResponse.builder()
+                .id("id2")
+                .nama("Mario Kart")
+                .deskripsi("Racing game with Mario characters")
+                .harga(150)
+                .kategori("Racing")
+                .stok(30)
+                .build();
+
+        games.add(game1);
+        games.add(game2);
+
+        when(gameSearchService.searchGames(query)).thenReturn(CompletableFuture.completedFuture(games));
+
+        CompletableFuture<ResponseEntity<List<GameResponse>>> responseFuture = gameController.searchGames(query);
+        ResponseEntity<List<GameResponse>> responseEntity = responseFuture.join();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(2, responseEntity.getBody().size());
+        assertEquals(game1, responseEntity.getBody().get(0));
+        assertEquals(game2, responseEntity.getBody().get(1));
+    }
 }
