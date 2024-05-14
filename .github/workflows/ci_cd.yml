@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - staging
-
 jobs:
   build:
     name: Build
@@ -33,7 +32,9 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build with Gradle
-        run: ./gradlew assemble
+        run: |
+          ./gradlew assemble
+      # (Optional) Add steps for running tests and generating reports
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -71,6 +72,8 @@ jobs:
           ./gradlew test
           ./gradlew jacocoTestReport
 
+      # (Optional) Add steps for generating coverage report and other post-test tasks
+
   publish:
     name: Publish Docker Image
     runs-on: ubuntu-latest
@@ -78,10 +81,14 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: check directory
+        run: ls -al
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-app
+      - name: check directory
+        run: ls -al
       - name: Docker login
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
       - name: Set Docker BuildKit
@@ -102,12 +109,15 @@ jobs:
       - name: Install SSH client
         run: sudo apt-get install openssh-client
 
-      - name: Create ssh key
-        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && chmod 400 ssh-key.pem
+      - name: Create SSH Key
+        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && cat ssh-key.pem
 
-      - name: Deploy to GCP
+      - name: Update Permissions for SSH Key
+        run: chmod 400 ssh-key.pem
+
+      - name: Pull Latest Docker Image and Restart Container
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh-key.pem ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_STATIC_IP }} "
-            sudo docker container rm -f ${{ secrets.CONTAINER_NAME }} || true &&
-            sudo docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} || true &&
-            sudo docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}"
+            docker pull ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} &&
+            docker container rm -f my-springboot-app-updated &&
+            docker run --name my-springboot-app-updated -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}"
