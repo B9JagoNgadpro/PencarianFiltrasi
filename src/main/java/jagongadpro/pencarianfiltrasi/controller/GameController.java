@@ -37,4 +37,18 @@ public class GameController {
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(e -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
+
+    @GetMapping("/{id}")
+    public CompletableFuture<ResponseEntity<GameResponse>> getGameById(@PathVariable String id) {
+        return gameSearchService.findGameById(id)
+                .<ResponseEntity<GameResponse>>handle((gameResponse, ex) -> {
+                    if (ex != null) {
+                        return ResponseEntity.<GameResponse>status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                    } else if (gameResponse != null) {
+                        return ResponseEntity.ok(gameResponse);
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                });
+    }
 }
