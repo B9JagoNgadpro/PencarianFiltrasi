@@ -71,7 +71,7 @@ jobs:
           ./gradlew check --info --stacktrace
           ./gradlew test
           ./gradlew jacocoTestReport
-      # (Optional) Add steps for generating coverage report and other post-test task
+      # (Optional) Add steps for generating coverage report and other post-test task x
 
   publish:
     name: Publish Docker Image
