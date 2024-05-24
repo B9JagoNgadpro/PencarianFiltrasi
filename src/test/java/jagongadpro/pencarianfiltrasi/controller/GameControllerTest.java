@@ -1,7 +1,9 @@
 package jagongadpro.pencarianfiltrasi.controller;
 
 import jagongadpro.pencarianfiltrasi.dto.GameResponse;
+import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.service.GameSearchService;
+import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,12 +17,16 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class GameControllerTest {
 
     @Mock
     private GameSearchService gameSearchService;
+
+    @Mock
+    private GameRepository gameRepository;
 
     @InjectMocks
     private GameController gameController;
@@ -148,5 +154,27 @@ public class GameControllerTest {
         assertEquals(2, responseEntity.getBody().size());
         assertEquals(game1, responseEntity.getBody().get(0));
         assertEquals(game2, responseEntity.getBody().get(1));
+    }
+
+    @Test
+    public void testAddGame() {
+        Game game = new Game();
+        game.setId("1");
+        game.setNama("New Game");
+        game.setDeskripsi("New Game Description");
+        game.setHarga(60);
+        game.setKategori("Action");
+        game.setStok(20);
+
+        when(gameRepository.save(any(Game.class))).thenReturn(game);
+
+        Game result = gameController.addGame(game);
+
+        assertEquals(game.getId(), result.getId());
+        assertEquals(game.getNama(), result.getNama());
+        assertEquals(game.getDeskripsi(), result.getDeskripsi());
+        assertEquals(game.getHarga(), result.getHarga());
+        assertEquals(game.getKategori(), result.getKategori());
+        assertEquals(game.getStok(), result.getStok());
     }
 }
