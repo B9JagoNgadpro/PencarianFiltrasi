@@ -1,10 +1,13 @@
 package jagongadpro.pencarianfiltrasi.controller;
 
 import jagongadpro.pencarianfiltrasi.dto.GameResponse;
+import jagongadpro.pencarianfiltrasi.model.Game;
+import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 import jagongadpro.pencarianfiltrasi.service.GameSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.http.HttpStatus;
@@ -14,10 +17,12 @@ import org.springframework.http.HttpStatus;
 public class GameController {
 
     private final GameSearchService gameSearchService;
+    private final GameRepository gameRepository;
 
     @Autowired
-    public GameController(GameSearchService gameSearchService) {
+    public GameController(GameSearchService gameSearchService, GameRepository gameRepository) {
         this.gameSearchService = gameSearchService;
+        this.gameRepository = gameRepository;
     }
 
     @GetMapping
@@ -57,5 +62,10 @@ public class GameController {
                         return ResponseEntity.notFound().build();
                     }
                 });
+    }
+
+    @PostMapping("/add")
+    public Game addGame(@RequestBody Game game) {
+        return gameRepository.save(game);
     }
 }
