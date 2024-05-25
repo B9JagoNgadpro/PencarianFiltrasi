@@ -1,6 +1,7 @@
 package jagongadpro.pencarianfiltrasi.service;
 
 import jagongadpro.pencarianfiltrasi.dto.GameResponse;
+import jagongadpro.pencarianfiltrasi.dto.WebResponse;
 import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
