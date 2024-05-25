@@ -27,11 +27,14 @@ public class GameSearchServiceImpl implements GameSearchService {
     @Value("${microservice.game.url}")
     private String gameServiceUrl;
 
-
     @Autowired
     public GameSearchServiceImpl(GameRepository gameRepository, WebClient.Builder webClientBuilder) {
         this.gameRepository = gameRepository;
         this.webClientBuilder = webClientBuilder;
+    }
+
+    public void setGameServiceUrl(String gameServiceUrl) {
+        this.gameServiceUrl = gameServiceUrl;
     }
 
     @Override
