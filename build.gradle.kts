@@ -38,6 +38,7 @@ dependencies {
     // implementation("io.netty:netty-resolver-dns-native-macos:4.1.75.Final:osx-x86_64")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.76.Final:osx-aarch_64")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
 }
 
 tasks.withType<Test> {
