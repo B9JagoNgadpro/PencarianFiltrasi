@@ -11,6 +11,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 public class GameSearchServiceImpl implements GameSearchService {
     private final GameRepository gameRepository;
     private final WebClient.Builder webClientBuilder;
+
+    private static final Logger logger = LoggerFactory.getLogger(GameSearchServiceImpl.class);
 
     @Value("${microservice.game.url}")
     private String gameServiceUrl;
@@ -39,16 +43,20 @@ public class GameSearchServiceImpl implements GameSearchService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get?nama=" + name;
+                logger.info("Requesting URL: {}", url);
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
                         .uri(url)
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
                         .block();
+                logger.info("Response received: {}", response);
                 return response.getData();
             } catch (WebClientResponseException e) {
+                logger.error("WebClientResponseException: {}", e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
+                logger.error("Exception: {}", e.getMessage(), e);
                 throw e;
             }
         });
@@ -58,23 +66,26 @@ public class GameSearchServiceImpl implements GameSearchService {
     public CompletableFuture<List<GameResponse>> filterGames(String name, String category, Integer minPrice, Integer maxPrice) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/filter";
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get";
                 URI uri = UriComponentsBuilder.fromUriString(url)
                         .queryParam("nama", name != null ? name : "")
                         .queryParam("kategori", category != null ? category : "")
-                        .queryParam("hargaMin", minPrice != null ? minPrice : "")
-                        .queryParam("hargaMax", maxPrice != null ? maxPrice : "")
+                        .queryParam("harga", minPrice != null ? minPrice : "")
                         .build().toUri();
+                logger.info("Requesting URL: {}", uri.toString());
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
                         .uri(uri)
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
                         .block();
+                logger.info("Response received: {}", response);
                 return response.getData();
             } catch (WebClientResponseException e) {
+                logger.error("WebClientResponseException: {}", e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
+                logger.error("Exception: {}", e.getMessage(), e);
                 throw e;
             }
         });
@@ -85,16 +96,20 @@ public class GameSearchServiceImpl implements GameSearchService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/" + id;
+                logger.info("Requesting URL: {}", url);
                 WebResponse<GameResponse> response = webClientBuilder.build()
                         .get()
                         .uri(url)
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<WebResponse<GameResponse>>() {})
                         .block();
+                logger.info("Response received: {}", response);
                 return response != null ? response.getData() : null;
             } catch (WebClientResponseException e) {
+                logger.error("WebClientResponseException: {}", e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
+                logger.error("Exception: {}", e.getMessage(), e);
                 throw e;
             }
         });
@@ -105,16 +120,20 @@ public class GameSearchServiceImpl implements GameSearchService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get?nama=" + query;
+                logger.info("Requesting URL: {}", url);
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
                         .uri(url)
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
                         .block();
+                logger.info("Response received: {}", response);
                 return response.getData();
             } catch (WebClientResponseException e) {
+                logger.error("WebClientResponseException: {}", e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
+                logger.error("Exception: {}", e.getMessage(), e);
                 throw e;
             }
         });
