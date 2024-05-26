@@ -40,37 +40,10 @@ public class GameSearchServiceImpl implements GameSearchService {
     }
 
     @Override
-    public CompletableFuture<List<GameResponse>> findGamesByName(String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get";
-                URI uri = UriComponentsBuilder.fromUriString(url)
-                        .queryParam("nama", name)
-                        .build().toUri();
-                logger.info("Requesting URL: {}", uri.toString());
-                WebResponse<List<GameResponse>> response = webClientBuilder.build()
-                        .get()
-                        .uri(uri)
-                        .retrieve()
-                        .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
-                        .block();
-                logger.info("Response received: {}", response);
-                return response.getData();
-            } catch (WebClientResponseException e) {
-                logger.error("WebClientResponseException: {}", e.getMessage(), e);
-                throw e;
-            } catch (Exception e) {
-                logger.error("Exception: {}", e.getMessage(), e);
-                throw e;
-            }
-        });
-    }
-
-    @Override
     public CompletableFuture<List<GameResponse>> filterGames(String name, String category, Integer minPrice, Integer maxPrice) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get";
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/get";
                 URI uri = UriComponentsBuilder.fromUriString(url)
                         .queryParam("nama", name != null ? name : "")
                         .queryParam("kategori", category != null ? category : "")
@@ -95,10 +68,37 @@ public class GameSearchServiceImpl implements GameSearchService {
     }
 
     @Override
+    public CompletableFuture<List<GameResponse>> findGamesByName(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/get";
+                URI uri = UriComponentsBuilder.fromUriString(url)
+                        .queryParam("nama", name)
+                        .build().toUri();
+                logger.info("Requesting URL: {}", uri.toString());
+                WebResponse<List<GameResponse>> response = webClientBuilder.build()
+                        .get()
+                        .uri(uri)
+                        .retrieve()
+                        .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
+                        .block();
+                logger.info("Response received: {}", response);
+                return response.getData();
+            } catch (WebClientResponseException e) {
+                logger.error("WebClientResponseException: {}", e.getMessage(), e);
+                throw e;
+            } catch (Exception e) {
+                logger.error("Exception: {}", e.getMessage(), e);
+                throw e;
+            }
+        });
+    }
+
+    @Override
     public CompletableFuture<GameResponse> findGameById(String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/" + id;
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/" + id;
                 logger.info("Requesting URL: {}", url);
                 WebResponse<GameResponse> response = webClientBuilder.build()
                         .get()
@@ -122,7 +122,7 @@ public class GameSearchServiceImpl implements GameSearchService {
     public CompletableFuture<List<GameResponse>> searchGames(String query) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get?nama=" + query;
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/get?nama=" + query;
                 logger.info("Requesting URL: {}", url);
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
