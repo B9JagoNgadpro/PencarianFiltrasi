@@ -6,11 +6,12 @@ plugins {
     id("org.sonarqube") version "4.4.1.3373"
 }
 
-sonar {
+sonarqube {
     properties {
-        property("sonar.projectKey","B9JagoNgadpro_PencarianFiltrasi")
-        property("sonar.organization","b9jagongadpro")
-        property("sonar.host.url","https://sonarcloud.io")
+        property("sonar.projectKey", "B9JagoNgadpro_PencarianFiltrasi")
+        property("sonar.organization", "b9jagongadpro")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.gradle.skipCompile", "true")
     }
 }
 
