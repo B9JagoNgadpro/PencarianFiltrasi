@@ -16,6 +16,21 @@ jobs:
   Analysis:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: course
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out the Git repository
         uses: actions/checkout@v4
@@ -47,6 +62,11 @@ jobs:
 
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/course
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
 
       - name: Run SonarQube analysis
         env:
