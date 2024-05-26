@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - staging
+
 jobs:
   build:
     name: Build
@@ -29,12 +30,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
       - name: Build with Gradle
-        run: |
-          ./gradlew assemble
-      # (Optional) Add steps for running tests and generating reports
+        run: ./gradlew assemble
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -46,6 +47,20 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: build
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: course
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -56,8 +71,10 @@ jobs:
           distribution: "temurin"
           java-version: "21"
           cache: "gradle"
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -67,11 +84,15 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Test with Gradle
-        run: |
-          ./gradlew check --info --stacktrace
-          ./gradlew test
-          ./gradlew jacocoTestReport
-      # (Optional) Add steps for generating coverage report and other post-test task
+        run: ./gradlew test
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/course
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+
+      - name: Generate JaCoCo Report
+        run: ./gradlew jacocoTestReport
 
   publish:
     name: Publish Docker Image
@@ -80,22 +101,25 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: check directory
+
+      - name: Check directory
         run: ls -al
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-app
           path: build/libs
-      - name: check directory
-        run: ls -al
+
+      - name: Check directory
+        run: ls -al build/libs/
+
       - name: Docker login
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
+
       - name: Set Docker BuildKit
         run: export DOCKER_BUILDKIT=1
-      - name: Check directory after downloading artifact
-        run: |
-          ls -al build/libs/
+
       - name: Build Docker Image
         run: |
           docker build --build-arg PRODUCTION=${{ secrets.PRODUCTION }} --build-arg JDBC_DATABASE_PASSWORD=${{ secrets.JDBC_DATABASE_PASSWORD }} --build-arg JDBC_DATABASE_URL=${{ secrets.JDBC_DATABASE_URL }} --build-arg JDBC_DATABASE_USERNAME=${{ secrets.JDBC_DATABASE_USERNAME}} -t ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} .
@@ -112,10 +136,10 @@ jobs:
       - name: Install SSH client
         run: sudo apt-get install openssh-client
 
-      - name: create ssh key
+      - name: Create SSH key
         run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && cat ssh-key.pem
 
-      - name: update permission
+      - name: Update permission
         run: chmod 400 ssh-key.pem
 
       - name: Deploy to GCP
