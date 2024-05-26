@@ -11,12 +11,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class GameSearchServiceImpl implements GameSearchService {
@@ -42,11 +43,14 @@ public class GameSearchServiceImpl implements GameSearchService {
     public CompletableFuture<List<GameResponse>> findGamesByName(String name) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get?nama=" + name;
-                logger.info("Requesting URL: {}", url);
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get";
+                URI uri = UriComponentsBuilder.fromUriString(url)
+                        .queryParam("nama", name)
+                        .build().toUri();
+                logger.info("Requesting URL: {}", uri.toString());
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
-                        .uri(url)
+                        .uri(uri)
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<WebResponse<List<GameResponse>>>() {})
                         .block();
@@ -70,7 +74,6 @@ public class GameSearchServiceImpl implements GameSearchService {
                 URI uri = UriComponentsBuilder.fromUriString(url)
                         .queryParam("nama", name != null ? name : "")
                         .queryParam("kategori", category != null ? category : "")
-                        .queryParam("harga", minPrice != null ? minPrice : "")
                         .build().toUri();
                 logger.info("Requesting URL: {}", uri.toString());
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
