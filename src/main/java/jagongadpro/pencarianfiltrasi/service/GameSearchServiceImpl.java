@@ -2,25 +2,19 @@ package jagongadpro.pencarianfiltrasi.service;
 
 import jagongadpro.pencarianfiltrasi.dto.GameResponse;
 import jagongadpro.pencarianfiltrasi.dto.WebResponse;
-import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.core.ParameterizedTypeReference;
-import jakarta.persistence.criteria.Predicate;
-import java.util.ArrayList;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import org.springframework.web.util.UriComponentsBuilder;
-import java.net.URI;
-
-
-import org.springframework.util.StringUtils;
 
 @Service
 public class GameSearchServiceImpl implements GameSearchService {
@@ -64,11 +58,12 @@ public class GameSearchServiceImpl implements GameSearchService {
     public CompletableFuture<List<GameResponse>> filterGames(String name, String category, Integer minPrice, Integer maxPrice) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/get";
+                String url = StringUtils.trimTrailingCharacter(gameServiceUrl, '/') + "/games/filter";
                 URI uri = UriComponentsBuilder.fromUriString(url)
                         .queryParam("nama", name != null ? name : "")
                         .queryParam("kategori", category != null ? category : "")
-                        .queryParam("harga", minPrice != null ? minPrice : "")
+                        .queryParam("hargaMin", minPrice != null ? minPrice : "")
+                        .queryParam("hargaMax", maxPrice != null ? maxPrice : "")
                         .build().toUri();
                 WebResponse<List<GameResponse>> response = webClientBuilder.build()
                         .get()
@@ -123,16 +118,5 @@ public class GameSearchServiceImpl implements GameSearchService {
                 throw e;
             }
         });
-    }
-
-    private GameResponse toGameResponse(Game game) {
-        return GameResponse.builder()
-                .id(game.getId())
-                .nama(game.getNama())
-                .deskripsi(game.getDeskripsi())
-                .harga(game.getHarga())
-                .kategori(game.getKategori())
-                .stok(game.getStok())
-                .build();
     }
 }
