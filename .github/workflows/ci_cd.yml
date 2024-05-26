@@ -155,3 +155,4 @@ jobs:
             # Run the new container
             sudo docker run --restart unless-stopped --name ${{ secrets.CONTAINER_NAME }} -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }};
           "
+# 
