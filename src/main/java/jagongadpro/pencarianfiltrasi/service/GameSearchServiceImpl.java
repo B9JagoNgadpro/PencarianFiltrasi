@@ -36,6 +36,10 @@ public class GameSearchServiceImpl implements GameSearchService {
         this.webClientBuilder = webClientBuilder;
     }
 
+    public void setGameServiceUrl(String gameServiceUrl) {
+        this.gameServiceUrl = gameServiceUrl;
+    }
+
     @Override
     public CompletableFuture<List<GameResponse>> findGamesByName(String name) {
         return CompletableFuture.supplyAsync(() -> {
