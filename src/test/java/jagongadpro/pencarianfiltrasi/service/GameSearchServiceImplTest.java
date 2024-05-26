@@ -1,23 +1,26 @@
 package jagongadpro.pencarianfiltrasi.service;
 
 import jagongadpro.pencarianfiltrasi.dto.GameResponse;
-import jagongadpro.pencarianfiltrasi.model.Game;
 import jagongadpro.pencarianfiltrasi.repository.GameRepository;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 public class GameSearchServiceImplTest {
@@ -28,13 +31,32 @@ public class GameSearchServiceImplTest {
     @InjectMocks
     private GameSearchServiceImpl gameSearchService;
 
-    @Test
-    public void testFindGamesByName() {
-        Game game1 = new Game("1", "Mario", "Description of Mario", 50, "Adventure", 10);
-        Game game2 = new Game("2", "Zelda", "Description of Zelda", 60, "Adventure", 5);
-        when(gameRepository.findByNamaContaining("Adventure")).thenReturn(Arrays.asList(game1, game2));
+    private MockWebServer mockWebServer;
 
-        CompletableFuture<List<GameResponse>> future = gameSearchService.findGamesByName("Adventure");
+    @Value("${microservice.game.url}")
+    private String gameServiceUrl;
+
+    @BeforeEach
+    public void setUp() throws IOException {
+        mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        gameServiceUrl = mockWebServer.url("/").toString();
+        gameSearchService = new GameSearchServiceImpl(gameRepository, WebClient.builder());
+        gameSearchService.setGameServiceUrl(gameServiceUrl);
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        mockWebServer.shutdown();
+    }
+
+    @Test
+    public void testFindGamesByName() throws Exception {
+        String name = "Mario";
+        String mockResponseBody = "{ \"data\": [ { \"id\": \"1\", \"nama\": \"Mario\", \"deskripsi\": \"Description of Mario\", \"harga\": 50, \"kategori\": \"Adventure\", \"stok\": 10 }, { \"id\": \"2\", \"nama\": \"Zelda\", \"deskripsi\": \"Description of Zelda\", \"harga\": 60, \"kategori\": \"Adventure\", \"stok\": 5 } ] }";
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
+
+        CompletableFuture<List<GameResponse>> future = gameSearchService.findGamesByName(name);
         List<GameResponse> results = future.join();
 
         assertNotNull(results);
@@ -44,10 +66,12 @@ public class GameSearchServiceImplTest {
     }
 
     @Test
-    public void testFindGamesByName_NoResults() {
-        when(gameRepository.findByNamaContaining("Nonexistent")).thenReturn(Arrays.asList());
+    public void testFindGamesByName_NoResults() throws Exception {
+        String name = "Nonexistent";
+        String mockResponseBody = "{ \"data\": [] }";
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
 
-        CompletableFuture<List<GameResponse>> future = gameSearchService.findGamesByName("Nonexistent");
+        CompletableFuture<List<GameResponse>> future = gameSearchService.findGamesByName(name);
         List<GameResponse> results = future.join();
 
         assertNotNull(results);
@@ -55,38 +79,12 @@ public class GameSearchServiceImplTest {
     }
 
     @Test
-    public void testFilterGames() {
-        Game game1 = new Game("1", "Mario", "Description of Mario", 50, "Adventure", 10);
-        Game game2 = new Game("2", "Zelda", "Description of Zelda", 60, "Adventure", 5);
+    public void testFindGameById_Found() throws Exception {
+        String gameId = "1";
+        String mockResponseBody = "{ \"data\": { \"id\": \"1\", \"nama\": \"Mario\", \"deskripsi\": \"Description of Mario\", \"harga\": 50, \"kategori\": \"Adventure\", \"stok\": 10 } }";
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
 
-        when(gameRepository.findAll(any(Specification.class))).thenReturn(Arrays.asList(game1, game2));
-
-        CompletableFuture<List<GameResponse>> future = gameSearchService.filterGames("Zel", "Adventure", 10, 100);
-        List<GameResponse> results = future.join();
-
-        assertNotNull(results);
-        assertEquals(2, results.size());
-        assertEquals("Mario", results.get(0).getNama());
-        assertEquals("Zelda", results.get(1).getNama());
-    }
-
-    @Test
-    public void testFilterGames_NoResults() {
-        when(gameRepository.findAll(any(Specification.class))).thenReturn(Arrays.asList());
-
-        CompletableFuture<List<GameResponse>> future = gameSearchService.filterGames("Nonexistent", "Sports", 100, 500);
-        List<GameResponse> results = future.join();
-
-        assertNotNull(results);
-        assertTrue(results.isEmpty());
-    }
-
-    @Test
-    public void testFindGameById_Found() {
-        Game game = new Game("1", "Mario", "Description of Mario", 50, "Adventure", 10);
-        when(gameRepository.findById("1")).thenReturn(Optional.of(game));
-
-        CompletableFuture<GameResponse> future = gameSearchService.findGameById("1");
+        CompletableFuture<GameResponse> future = gameSearchService.findGameById(gameId);
         GameResponse result = future.join();
 
         assertNotNull(result);
@@ -94,34 +92,29 @@ public class GameSearchServiceImplTest {
     }
 
     @Test
-    public void testFindGameById_NotFound() {
-        when(gameRepository.findById("2")).thenReturn(Optional.empty());
+    public void testFindGameById_NotFound() throws Exception {
+        String gameId = "2";
+        String mockResponseBody = "{ \"data\": null }";
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
 
-        CompletableFuture<GameResponse> future = gameSearchService.findGameById("2");
+        CompletableFuture<GameResponse> future = gameSearchService.findGameById(gameId);
         GameResponse result = future.join();
 
-        assertNull(result);
+        assertTrue(result == null);
     }
 
     @Test
-    public void testSearchGames() {
-        Game game1 = new Game("1", "Mario", "Jump and run game", 50, "Adventure", 100);
-        Game game2 = new Game("2", "Zelda", "Explore and discover", 70, "Adventure", 60);
+    public void testSearchGames() throws Exception {
+        String query = "Mario";
+        String mockResponseBody = "{ \"data\": [ { \"id\": \"1\", \"nama\": \"Super Mario\", \"deskripsi\": \"Jump and run game\", \"harga\": 50, \"kategori\": \"Adventure\", \"stok\": 100 }, { \"id\": \"2\", \"nama\": \"Zelda\", \"deskripsi\": \"Explore and discover\", \"harga\": 70, \"kategori\": \"Adventure\", \"stok\": 60 } ] }";
+        mockWebServer.enqueue(new MockResponse().setBody(mockResponseBody).addHeader("Content-Type", "application/json"));
 
-        when(gameRepository.searchGames("Mario")).thenReturn(Arrays.asList(game1));
-        when(gameRepository.searchGames("Adventure")).thenReturn(Arrays.asList(game1, game2));
+        CompletableFuture<List<GameResponse>> future = gameSearchService.searchGames(query);
+        List<GameResponse> results = future.join();
 
-        CompletableFuture<List<GameResponse>> futureMario = gameSearchService.searchGames("Mario");
-        List<GameResponse> resultsMario = futureMario.join();
-        assertNotNull(resultsMario);
-        assertEquals(1, resultsMario.size());
-        assertEquals("Mario", resultsMario.get(0).getNama());
-
-        CompletableFuture<List<GameResponse>> futureAdventure = gameSearchService.searchGames("Adventure");
-        List<GameResponse> resultsAdventure = futureAdventure.join();
-        assertNotNull(resultsAdventure);
-        assertEquals(2, resultsAdventure.size());
-        assertEquals("Mario", resultsAdventure.get(0).getNama());
-        assertEquals("Zelda", resultsAdventure.get(1).getNama());
+        assertNotNull(results);
+        assertEquals(2, results.size());
+        assertEquals("Super Mario", results.get(0).getNama());
+        assertEquals("Zelda", results.get(1).getNama());
     }
 }
