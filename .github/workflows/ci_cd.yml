@@ -134,17 +134,24 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install SSH client
-        run: sudo apt-get install openssh-client
+        run: sudo apt-get install -y openssh-client
 
       - name: Create SSH key
-        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && cat ssh-key.pem
-
-      - name: Update permission
-        run: chmod 400 ssh-key.pem
+        run: echo "${{ secrets.SSH_KEY }}" > ssh-key.pem && chmod 400 ssh-key.pem
 
       - name: Deploy to GCP
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh-key.pem ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_STATIC_IP }} "
-            sudo docker container rm -f ${{ secrets.CONTAINER_NAME }} || true &&
-            sudo docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} || true &&
-            sudo docker run --restart unless-stopped --name ${{ secrets.CONTAINER_NAME }} -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}"
+            # Remove the existing container if it exists
+            if [ \$(sudo docker container ls -a -q -f name=${{ secrets.CONTAINER_NAME }}) ]; then
+              sudo docker container rm -f ${{ secrets.CONTAINER_NAME }};
+            fi
+          
+            # Remove the existing image if it exists
+            if [ \$(sudo docker image ls -q ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}) ]; then
+              sudo docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }};
+            fi
+
+            # Run the new container
+            sudo docker run --restart unless-stopped --name ${{ secrets.CONTAINER_NAME }} -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }};
+          "
