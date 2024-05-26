@@ -146,7 +146,7 @@ jobs:
             if [ \$(sudo docker container ls -a -q -f name=${{ secrets.CONTAINER_NAME }}) ]; then
               sudo docker container rm -f ${{ secrets.CONTAINER_NAME }};
             fi
-          
+            
             # Remove the existing image if it exists
             if [ \$(sudo docker image ls -q ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}) ]; then
               sudo docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }};
