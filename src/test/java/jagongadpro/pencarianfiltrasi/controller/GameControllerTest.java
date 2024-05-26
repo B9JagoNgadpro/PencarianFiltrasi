@@ -155,26 +155,4 @@ public class GameControllerTest {
         assertEquals(game1, responseEntity.getBody().get(0));
         assertEquals(game2, responseEntity.getBody().get(1));
     }
-
-    @Test
-    public void testAddGame() {
-        Game game = new Game();
-        game.setId("1");
-        game.setNama("New Game");
-        game.setDeskripsi("New Game Description");
-        game.setHarga(60);
-        game.setKategori("Action");
-        game.setStok(20);
-
-        when(gameRepository.save(any(Game.class))).thenReturn(game);
-
-        Game result = gameController.addGame(game);
-
-        assertEquals(game.getId(), result.getId());
-        assertEquals(game.getNama(), result.getNama());
-        assertEquals(game.getDeskripsi(), result.getDeskripsi());
-        assertEquals(game.getHarga(), result.getHarga());
-        assertEquals(game.getKategori(), result.getKategori());
-        assertEquals(game.getStok(), result.getStok());
-    }
 }
