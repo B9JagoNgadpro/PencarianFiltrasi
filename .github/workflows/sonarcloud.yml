@@ -52,7 +52,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew sonar -Dsonar.projectKey=B9JagoNgadpro_PenjualanPembelian \
+          ./gradlew sonar -Dsonar.projectKey=B9JagoNgadpro_PencarianFiltrasi \
                           -Dsonar.organization=b9jagongadpro \
                           -Dsonar.host.url=https://sonarcloud.io \
                           -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
