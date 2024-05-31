@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-public class GameSearchServiceImplTest {
+class GameSearchServiceImplTest {
 
     @Mock
     private GameRepository gameRepository;
