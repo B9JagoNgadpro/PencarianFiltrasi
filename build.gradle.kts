@@ -6,15 +6,6 @@ plugins {
     id("org.sonarqube") version "4.4.1.3373"
 }
 
-sonarqube {
-    properties {
-        property("sonar.projectKey", "B9JagoNgadpro_PencarianFiltrasi")
-        property("sonar.organization", "b9jagongadpro")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.gradle.skipCompile", "true")
-    }
-}
-
 group = "jagongadpro"
 version = "0.0.1-SNAPSHOT"
 
@@ -45,9 +36,9 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    // implementation("io.netty:netty-resolver-dns-native-macos:4.1.75.Final:osx-x86_64")
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.76.Final:osx-aarch_64")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
 }
 
 tasks.withType<Test> {
@@ -56,16 +47,23 @@ tasks.withType<Test> {
 
 tasks.test {
     useJUnitPlatform()
-    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+    finalizedBy(tasks.jacocoTestReport)
 }
+
 tasks.jacocoTestReport {
-    classDirectories.setFrom(files(classDirectories.files.map {
-        fileTree(it) { exclude("**/*Application**") }
-    }))
-    dependsOn(tasks.test) // tests are required to run before generating the report
+    dependsOn(tasks.test)
     reports {
-        xml.required.set(false)
+        xml.required.set(true)
         csv.required.set(false)
         html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "B9JagoNgadpro_PencarianFiltrasi")
+        property("sonar.organization", "b9jagongadpro")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
